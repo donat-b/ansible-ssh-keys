@@ -1,0 +1,38 @@
+---
+
+# get user's home directory
+- shell: 'getent passwd {{ item.user }} | cut -d: -f6'
+  changed_when: false
+  register: user_home
+
+- stat:
+    path: "{{ user_home.stdout }}/.ssh/id_rsa"
+  register: key_file
+
+- name: "ensure ssh key is absent"
+  file:
+    path: "{{ user_home.stdout }}/.ssh/id_rsa"
+    state: absent
+  when: |
+        (key_file.stat.exists == False or item.generate_new_key) and
+         item.left_host == inventory_hostname
+
+- name: "generate ssh key"
+  command: "ssh-keygen -N '' -C 'ansible generated key' -f $HOME/.ssh/id_rsa"
+  become_user: "{{ item.user }}"
+  when: |
+        (key_file.stat.exists == False or item.generate_new_key) and
+        item.left_host == inventory_hostname
+
+- fetch:
+    src: "{{ user_home.stdout }}/.ssh/id_rsa.pub"
+    dest: "/tmp/id_rsa_{{ user_home.stdout }}_{{ item.right_host }}.pub"
+    flat: yes
+  when: item.left_host == inventory_hostname
+
+- authorized_key:
+    user: "{{ item.user }}"
+    key: "{{ lookup('file', '/tmp/id_rsa_{{ user_home.stdout }}_{{ item.right_host }}.pub') }}"
+    key_options: '{{ item.key_options | default(omit) }}'
+    state: '{{ item.state | default("present") }}'
+  when: item.right_host == inventory_hostname

@@ -1,0 +1,4 @@
+---
+
+- include: setup-keys.yml
+  with_items: "{{ ssh_auth_keys }}"
