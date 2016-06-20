@@ -14,7 +14,7 @@
     path: "{{ user_home.stdout }}/.ssh/id_rsa"
     state: absent
   when: |
-        (key_file.stat.exists == False or item.generate_new_key) and
+        item.generate_new_key and
          item.left_host == inventory_hostname
 
 - name: "generate ssh key"
