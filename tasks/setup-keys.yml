@@ -15,14 +15,16 @@
     path: "{{ user_home.stdout }}/.ssh/id_rsa"
     state: absent
   when: |
+        item.generate_new_key is defined and
         item.generate_new_key and
-         item.left_host == inventory_hostname
+        item.left_host == inventory_hostname
 
 - name: 'generate ssh key'
   command: "ssh-keygen -N '' -C 'ansible generated key' -f $HOME/.ssh/id_rsa"
   become_user: "{{ item.user }}"
   when: |
-        (key_file.stat.exists == False or item.generate_new_key) and
+        (key_file.stat.exists == False or
+          (item.generate_new_key is defined and item.generate_new_key)) and
         item.left_host == inventory_hostname
 
 # as there is no way to directly transfer files between remotes...
