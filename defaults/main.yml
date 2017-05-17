@@ -1,8 +1,0 @@
----
-
-#ssh_auth_keys:
-#  - left_host: 'machine2'
-#    right_host: 'machine1'
-#    user: root
-#    key_options: 'from="{{ hostvars["machine2"].ansible_eth1.ipv4.address }}"'
-#    generate_new_key: 0
