@@ -7,12 +7,12 @@
 
 - name: 'check if key file exists'
   stat:
-    path: "{{ user_home.stdout }}/.ssh/id_rsa"
+    path: "{{ user_home.stdout }}/.ssh/{{ item.key_name | default('id_rsa') }}"
   register: key_file
 
 - name: 'ensure ssh key is absent'
   file:
-    path: "{{ user_home.stdout }}/.ssh/id_rsa"
+    path: "{{ user_home.stdout }}/.ssh/{{ item.key_name | default('id_rsa') }}"
     state: absent
   when: |
         item.generate_new_key is defined and
@@ -20,7 +20,7 @@
         item.left_host == inventory_hostname
 
 - name: 'generate ssh key'
-  command: "ssh-keygen -N '' -C 'ansible generated key' -f $HOME/.ssh/id_rsa"
+  command: "ssh-keygen -N '' -C 'ansible generated key' -f $HOME/.ssh/{{ item.key_name | default('id_rsa') }}"
   become_user: "{{ item.user }}"
   when: |
         (key_file.stat.exists == False or
@@ -30,7 +30,7 @@
 # as there is no way to directly transfer files between remotes...
 - name: 'fetch ssh key'
   fetch:
-    src: '{{ user_home.stdout }}/.ssh/id_rsa.pub'
+    src: '{{ user_home.stdout }}/.ssh/{{ item.key_name | default('id_rsa') }}.pub'
     dest: '/tmp/id_rsa_{{ user_home.stdout }}_{{ item.right_host }}.pub'
     flat: yes
   when: item.left_host == inventory_hostname

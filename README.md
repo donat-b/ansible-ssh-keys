@@ -16,6 +16,7 @@ ssh_auth_keys:
   - left_host: 'machine2'  # The client
     right_host: 'machine1' # The remote
     user: root             # The username on the remote host
+    key_name: id_rsa
     key_options: 'from="{{ hostvars["machine2"].ansible_eth1.ipv4.address }}"'
     generate_new_key: 0
 ```
